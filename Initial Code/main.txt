@@ -1,0 +1,99 @@
+//notes
+/*
+//
+
+I should have creeps just to harvest and drop
+have carrying creeps to search for dropped energy and transfer to spawn or extension
+    - do you think this is better than actually going to the creeps?
+        - well, at least the harvestor doesn't have to wait for someone to come pick up their stuff
+    - use the memory for this
+
+currently, the miners are carrying 100 and dropping only 50 to the extension, and returning to mine
+    - use the memory to see if it's was dropping previously or mining
+    
+oh and up resource is resource[0]
+*/
+
+
+//var creepPopulation = 20;
+var harvestorTeam = 8;
+var buildTeam = 2;
+var upgradeTeam = 3;
+
+var creepPopulation = harvestorTeam + buildTeam + upgradeTeam;
+
+var harvestorModule = require('harvestor');
+var buildModule = require('buildModule');
+var upgradeModule = require('upgradeModule');
+var harvestorTeamModule = require('harvestorTeamModule');
+
+var creepCount = 0;
+
+for(var name in Game.creeps) {
+    
+    
+	var creep = Game.creeps[name];
+	
+	
+    creepCount++;
+    
+    if (harvestorTeam > 0)
+    {
+        harvestorModule(creep, creepCount);
+        harvestorTeam--;
+    }
+    else if (buildTeam > 0)
+    {
+        //var target = creep.pos.findClosest(FIND_SOURCES_ACTIVE);
+        //var target = creep.room.find(FIND_SOURCES)[0];
+		//creep.moveTo(target);
+        //creep.moveTo(target);
+        /*
+        var target = creep.pos.findClosest(FIND_CONSTRUCTION_SITES);
+        if(target) 
+        {
+            creep.moveTo(target);
+            creep.build(target);
+        }
+        */
+        
+        buildModule(creep);
+        
+        buildTeam--;
+    }
+    else if (upgradeTeam > 0)
+    {
+        upgradeModule(creep);
+        upgradeTeam--;
+    
+    }
+    
+    /*
+    if (creepCount >= (creepPopulation -3))
+    {
+        if(creep.room.controller) 
+        {
+            creep.moveTo(creep.room.controller);
+            creep.upgradeController(creep.room.controller);
+        }
+    }
+    
+    /*
+    else if (creepCount >= creepPopulation)
+    {
+        //creep.suicide();
+    }
+    
+    
+    else
+    {
+        harvestorModule(creep, creepCount%2);
+    }
+    */
+}
+
+
+if (creepCount < creepPopulation && Game.spawns.Spawn1.canCreateCreep())
+{
+    Game.spawns.Spawn1.createCreep([WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE]);
+}

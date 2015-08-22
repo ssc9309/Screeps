@@ -1,0 +1,63 @@
+/*
+ * Module code goes here. Use 'module.exports' to export things:
+ * module.exports = 'a thing';
+ *
+ * You can import it from another modules like this:
+ * var mod = require('buildModule'); // -> 'a thing'
+ */
+ 
+module.exports = function (creep) {
+    creep.say("B");
+
+	if(creep.carry.energy == 0)// && Room.energyAvailable > 500)// && Game.spawns.Spawn1.energy > 200) 
+	{
+	    if (Game.spawns.Spawn1.energy == Game.spawns.Spawn1.energyCapacity)
+	    {
+		    creep.moveTo(Game.spawns.Spawn1);
+		    Game.spawns.Spawn1.transferEnergy(creep);
+	    }
+	    else
+	    {
+	        var extensions = Game.spawns.Spawn1.room.find(FIND_MY_STRUCTURES, 
+	        {
+                filter: { structureType: STRUCTURE_EXTENSION }
+            });
+            
+            for(var x in extensions)
+            {
+                var extension = extensions[x];
+                if (extension.energy == extension.energyCapacity)
+                {
+                    creep.moveTo(extension);
+		            extension.transferEnergy(creep);
+                }
+            }
+	    }
+	}
+	else 
+	{
+		var target = creep.pos.findClosest(FIND_CONSTRUCTION_SITES);
+        if(target) 
+        {
+            creep.moveTo(target);
+            creep.build(target);
+            creep.say("Building");
+        }
+        else
+        {
+            brokenBuildings = creep.room.find(FIND_MY_STRUCTURES);
+            for(var b in brokenBuildings)
+            {
+                //creep.say("All the buildings");
+                if (brokenBuildings[b].hits < brokenBuildings[b].hitsMax)
+                //if (b.hits < b.hitsMax)
+                {
+                    creep.say("Fixing");
+                    creep.moveTo(brokenBuildings[b]);
+                    creep.repair(brokenBuildings[b]);
+                }
+            }
+        }
+        //creep.say("End");
+	}
+}
