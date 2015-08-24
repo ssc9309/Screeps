@@ -1,0 +1,111 @@
+New code
+
+main
+{
+	minerLimit = #
+	truck = #
+	builder = #
+	upgrade
+	army
+	...
+	
+	minerCount = 0;
+	truckCount = 0;
+	...
+	
+	for (each creep in the game)
+	{
+		if(memory[creep] == "mine")
+		{
+			minerCount++;
+		}
+		else if (...)
+		...
+	}
+	
+	//most important ones will come first
+	//actually try to at least have 1 miner and 1 truck first
+	
+	if (minerCount == 0)
+	{
+		createMiner()
+	}
+	else if (truckCount == 0)
+	{
+		createTruck
+	}
+	
+	else if (mine > 0)
+	{
+		createMiner()
+		//work*#, move
+	}
+	else if(truck > 0)
+	{
+		createTruck()
+	}
+	...
+	
+
+    foreach(creep)
+	{
+		if (Memory[creep] == "miner")
+		{
+			doItsThingModule(creep)
+		}
+		else if (...)
+		...
+	}
+}
+
+
+
+
+MinerModule
+//somehow use memory to determine which resource it should be going to
+
+go to mine
+mine
+if capacity full
+{
+	drop
+}
+
+
+TruckModule
+{
+//also try to use memory to know which miner it should stick to
+
+	if not full
+	{
+		go to the assigned miner
+		pick up dropped energy
+	}
+	else
+	{
+		go to storage, extension, link, or spawn to drop
+	}
+	
+	if the current location is no road.
+	{
+		drop a construction
+	}
+}
+
+
+build and upgrade, use same modules
+
+army, use example modules
+// melee and range?
+//maybe just do range for now.
+//actually, range costs a lot, just do a balanced build; tough, melee, and range
+
+var target = creep.pos.findClosest(FIND_HOSTILE_CREEPS);
+if(target) {
+    creep.moveTo(target);
+    creep.attack(target);
+}
+else
+{
+	//use a counter or memory to station them evenly
+}
