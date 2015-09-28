@@ -63,6 +63,7 @@ main
 
 MinerModule
 //somehow use memory to determine which resource it should be going to
+//use flags for miner and truck?
 
 go to mine
 mine
@@ -75,6 +76,8 @@ if capacity full
 TruckModule
 {
 //also try to use memory to know which miner it should stick to
+//and actually drop everything off before returning.
+	//may have to use memory for that also
 
 	if not full
 	{
@@ -108,4 +111,5 @@ if(target) {
 else
 {
 	//use a counter or memory to station them evenly
+	//use flag to station
 }
