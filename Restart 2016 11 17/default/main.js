@@ -1,4 +1,4 @@
-//notes
+//notes asdf
 /*
     - have the upgrade and build bots grab enery from closest structure, like trucks
 */
@@ -31,10 +31,10 @@ var transferLimit = 0;
 var minerLimit = 2;
 var truckLimit = 4;
 var buildLimit = 1;
-var upgradeLimit = 3;
+var upgradeLimit = 1;
 var armyLimit = 0;
 var controlLimit = 0;
-var repairLimit = 2;
+var repairLimit = 0;
 var testLimit = 0;
 
 //if there is no construction sites, no building units
@@ -432,6 +432,7 @@ else if (armyCount < armyLimit)
 }
 else if (controlCount < controlLimit)
 {
+    console.log("Are you trying to control?");
     var name = Game.spawns.Spawn1.createCreep(controlBody);
 
     if (name != -6 && name != -4)
@@ -441,14 +442,17 @@ else if (controlCount < controlLimit)
 }
 else if (repairCount < repairLimit)
 {
+    console.log("Are you trying to repair?");
     var name = Game.spawns.Spawn1.createCreep(repairBody);
-    if (name != -6 && name != -4)
+    //console.log(name);
+    if(name >= 0)
     {
         Memory.creeps[name].role = 'repair';
     }
 }
 else if (testCount < testLimit)
 {
+    console.log("Are you trying to test?");
     var name = Game.spawns.Spawn1.createCreep(testBody);
 
     if (name != -6 && name != -4)

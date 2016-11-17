@@ -245,6 +245,6 @@ module.exports = function(creep)
     }
     
     //and drop a road
-    creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD);
+    //creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD);
     
 }
