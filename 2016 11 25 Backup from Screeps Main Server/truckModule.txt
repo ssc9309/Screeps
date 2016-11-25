@@ -1,0 +1,229 @@
+/*
+ * Module code goes here. Use 'module.exports' to export things:
+ * module.exports = 'a thing';
+ *
+ * You can import it from another modules like this:
+ * var mod = require('truckModule'); // -> 'a thing'
+ */
+ 
+module.exports = function(creep)
+{
+    creep.say('T' + creep.body.length/2);
+    
+    //var minerCreepsInTheRoom = creep.room.find(FIND_MY_CREEPS);
+    var creepsInTheRoom = creep.room.find(FIND_MY_CREEPS);
+
+    //similar to miner, assign a number
+    if (Memory.creeps[creep.name].number != 0 && Memory.creeps[creep.name].number != 1)
+    {
+        var resourceZeroCounter = 0;
+        var resourceOneCounter = 0;
+        
+        //for (var name in Game.creeps)
+        for (var index in creepsInTheRoom)
+        {
+            var tempCreep = creepsInTheRoom[index];
+            if (Memory.creeps[tempCreep.name].role == 'truck')
+            {
+                if (Memory.creeps[tempCreep.name].number == 0)
+                {
+                    resourceZeroCounter++;
+                }
+                else if (Memory.creeps[tempCreep.name].number == 1)
+                {
+                    resourceOneCounter++;
+                }
+            }
+        }
+        
+        if (resourceZeroCounter <= resourceOneCounter)
+        {
+            Memory.creeps[creep.name].number = 0;
+        }
+        else
+        {
+            Memory.creeps[creep.name].number = 1;
+        }
+    }
+    else
+    {
+        //equalize the number of trucks
+        var resourceZeroCounter = 0;
+        var resourceOneCounter = 0;
+        
+        //for (var name in Game.creeps)
+        for (var index in creepsInTheRoom)
+        {
+            var tempCreep = creepsInTheRoom[index];
+            if (Memory.creeps[tempCreep.name].role == 'truck')
+            {
+                if (Memory.creeps[tempCreep.name].number == 0)
+                {
+                    resourceZeroCounter++;
+                }
+                else if (Memory.creeps[tempCreep.name].number == 1)
+                {
+                    resourceOneCounter++;
+                }
+            }
+        }
+        
+        //console.log(creep.room + " " + resourceOneCounter);
+        
+        //if the difference is greater than 1, transfer one over
+        if (Math.abs(resourceOneCounter - resourceZeroCounter) > 1)
+        {
+            //console.log("Difference is greater than 1");
+            //console.log(resourceOneCounter);
+            if (resourceOneCounter > resourceZeroCounter)
+            {
+                //for (var name in Game.creeps)
+                for (var index in creepsInTheRoom)
+                {
+                    var tempCreep = creepsInTheRoom[index];
+                    if (Memory.creeps[tempCreep.name].role == 'truck')
+                    {
+                        if (Memory.creeps[tempCreep.name].number == 1)
+                        {
+                            Memory.creeps[tempCreep.name].number = 0;
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                //console.log("I should be here");
+                //for (var name in Game.creeps)
+                for (var index in creepsInTheRoom)
+                {
+                    var tempCreep = creepsInTheRoom[index];
+                    if (Memory.creeps[tempCreep.name].role == 'truck')
+                    {
+                        if (Memory.creeps[tempCreep.name].number == 0)
+                        {
+                            Memory.creeps[tempCreep.name].number = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    //find the correct miner creep
+    var minerCreep = null;
+    
+    var minerCreepsInTheRoom = creep.room.find(FIND_MY_CREEPS);
+    
+    //for (var name in Game.creeps)
+    for (var i in minerCreepsInTheRoom)
+    {
+        var tempCreep = minerCreepsInTheRoom[i];
+        
+        if (Memory.creeps[tempCreep.name].role == 'miner' && Memory.creeps[tempCreep.name].number == Memory.creeps[creep.name].number)
+        {
+            //minerCreep = Game.creeps[tempCreep.name];
+            minerCreep = tempCreep;
+            break;
+        }
+    }
+    
+    //if the minercreep is found
+    if (minerCreep != null)
+    {
+        if (Memory.creeps[creep.name].job == 'collect')
+        {
+            //collect until full
+            
+            if (creep.carry.energy < creep.carryCapacity)
+            {
+                var droppedEnergyTarget = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY, 
+                {
+                    filter: function(object)
+                    {
+                        if (creep.pos.getRangeTo(object) > 5)
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                });
+                
+                if (droppedEnergyTarget)
+                {
+                    if (creep.pickup(droppedEnergyTarget) == ERR_NOT_IN_RANGE)
+                    {
+                        creep.moveTo(droppedEnergyTarget);
+                    }
+                }
+                else
+                {
+                    if (minerCreep.transferEnergy(creep) == ERR_NOT_IN_RANGE)
+                    {
+                        creep.moveTo(minerCreep);
+                    }
+                    
+                }
+            }
+            else
+            {
+                Memory.creeps[creep.name].job = 'distribute';
+            }
+        }
+        else
+        {
+            //distribute until empty
+            
+            if (creep.carry.energy > 0)
+            {
+                var targetExt = creep.pos.findClosestByPath(FIND_MY_STRUCTURES,
+                {
+                    filter: function(object)
+                    {
+                        
+                        if (object.structureType == STRUCTURE_LINK && object.pos.getRangeTo(object.room.controller) < 5)
+                        {
+                            return false;
+                        }
+                        
+                        return (object.energy < object.energyCapacity);
+                    }
+                }
+                );
+                        
+                if (targetExt && targetExt.room == creep.room)
+                {
+                    if (creep.transferEnergy(targetExt) == ERR_NOT_IN_RANGE)
+                    {
+                        creep.moveTo(targetExt);
+                    }
+                    
+                }
+                else
+                {
+                    var storageInTheRoom = creep.room.storage;
+
+                    if (storageInTheRoom)
+                    {
+                        if (creep.transferEnergy(storageInTheRoom) == ERR_NOT_IN_RANGE)
+                        {
+                            creep.moveTo(storageInTheRoom);
+                        }
+                        
+                    }
+                }
+            }
+            else
+            {
+                Memory.creeps[creep.name].job = 'collect';
+            }
+        }
+    }
+    
+    //and drop a road
+    //creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD);
+}

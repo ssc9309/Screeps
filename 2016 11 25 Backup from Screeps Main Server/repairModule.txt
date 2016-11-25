@@ -1,0 +1,117 @@
+/*
+ * Module code goes here. Use 'module.exports' to export things:
+ * module.exports = 'a thing';
+ *
+ * You can import it from another modules like this:
+ * var mod = require('repairModule'); // -> 'a thing'
+ */
+ 
+module.exports = function(creep, maxHealth)
+{
+    creep.say("R" + creep.body.length/3);
+    
+    //var maxHealth = 200000;
+    
+    if (Memory.creeps[creep.name].job == 'collect')
+    {
+        if(creep.carry.energy < creep.carryCapacity)// && Room.energyAvailable > 500)// && Game.spawns.Spawn1.energy > 200) 
+    	{
+    	    if (creep.room.energyAvailable >= 300)
+    	    {
+    	        var storageBuilding = creep.room.storage;
+    	        if (!(storageBuilding === undefined) && storageBuilding.store.energy > 0)
+    	        {
+    	            if (storageBuilding.transferEnergy(creep) == ERR_NOT_IN_RANGE)
+    	            {
+    	                creep.moveTo(storageBuilding);
+    	            }
+    	        }
+    	        else
+    	        {
+        	        var targetExt = creep.pos.findClosestByPath(FIND_MY_STRUCTURES,
+                    {
+                        filter: function(object)
+                        {
+                            return (object.energy >= object.energyCapacity);
+                        }
+                    });
+                        
+                    if (targetExt)
+                    {
+                        if (targetExt.transferEnergy(creep) == ERR_NOT_IN_RANGE)
+                        {
+                            creep.moveTo(targetExt);
+                        }
+                    }
+    	        }
+    	    }
+    	}
+    	else
+    	{
+    	    Memory.creeps[creep.name].job = 'repair';
+    	}
+    }
+    else
+    {
+        
+        if (creep.carry.energy > 0)
+        {
+            //fix walls and ramparts first
+            var targetStructure = creep.pos.findClosestByPath(FIND_STRUCTURES,
+            {
+                filter: function(object)
+                {
+                    if((object.my && object.structureType == STRUCTURE_RAMPART) || object.structureType == STRUCTURE_WALL)
+                    {
+                        if (object.hits < object.hitsMax && object.hits < maxHealth)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            });
+            
+            if (targetStructure)
+            {
+                if (creep.repair(targetStructure) == ERR_NOT_IN_RANGE)
+                {
+                    creep.moveTo(targetStructure);
+                }
+            }
+            else
+            {
+                //if there is no walls that need fixing, fix roads
+                targetStructure = creep.pos.findClosestByPath(FIND_STRUCTURES,
+                {
+                    filter: function(object)
+                    {
+                        if (object.structureType == STRUCTURE_ROAD)
+                        {
+                            if (object.hits < object.hitsMax)
+                            {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                });
+                
+                if (targetStructure)
+                {
+                    if (creep.repair(targetStructure) == ERR_NOT_IN_RANGE)
+                    {
+                        creep.moveTo(targetStructure);
+                    }
+                }
+            }
+        }
+        else
+        {
+            Memory.creeps[creep.name].job = 'collect';
+        }
+    }
+    
+    
+    //creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD);
+}

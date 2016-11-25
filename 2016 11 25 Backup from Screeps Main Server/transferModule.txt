@@ -1,0 +1,63 @@
+9/*
+ * Module code goes here. Use 'module.exports' to export things:
+ * module.exports = 'a thing';
+ *
+ * You can import it from another modules like this:
+ * var mod = require('transferModule'); // -> 'a thing'
+ */
+ 
+module.exports = function(creep)
+{
+    creep.say('Tf'+ creep.body.length/2);
+    if (Memory.creeps[creep.name].job == 'collect')
+    {
+        if (creep.carry.energy < creep.carryCapacity)
+        {
+            var storageBuilding = creep.room.storage;
+            
+            if (storageBuilding && storageBuilding.store.energy > 0)
+            {
+                if (storageBuilding.transferEnergy(creep) == ERR_NOT_IN_RANGE)
+                {
+                    creep.moveTo(storageBuilding);
+                }
+            }
+        }
+        else
+        {
+            Memory.creeps[creep.name].job = 'distribute';
+        }
+    }
+    else
+    {
+        if (creep.carry.energy > 0)
+        {
+    	    var targetExt = creep.pos.findClosestByPath(FIND_MY_STRUCTURES,
+            {
+                filter: function(object)
+                {
+                    if (object.structureType == STRUCTURE_LINK && (object.pos.getRangeTo(object.room.controller) < 5 || creep.pos.getRangeTo(object) > 5))
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return (object.energy < object.energyCapacity);
+                    }
+                }
+            });
+                
+            if (targetExt)
+            {
+                if (creep.transferEnergy(targetExt) == ERR_NOT_IN_RANGE)
+                {
+                    creep.moveTo(targetExt);
+                }
+            }
+        }
+        else
+        {
+            Memory.creeps[creep.name].job = 'collect';
+        }
+     }
+ }

@@ -1,0 +1,161 @@
+/*
+ * Module code goes here. Use 'module.exports' to export things:
+ * module.exports = 'a thing';
+ *
+ * You can import it from another modules like this:
+ * var mod = require('wallRepairModule'); // -> 'a thing'
+ */
+ 
+module.exports = function(creep, maxHealth)
+{
+    creep.say("WR" + creep.body.length/3);
+    
+    //var maxHealth = 200000;
+    
+    if (Memory.creeps[creep.name].job == 'collect')
+    {
+        if(creep.carry.energy < creep.carryCapacity)// && Room.energyAvailable > 500)// && Game.spawns.Spawn1.energy > 200) 
+    	{
+    	    if (creep.room.energyAvailable >= 300)
+    	    {
+    	        var storageBuilding = creep.room.storage;
+    	        if (!(storageBuilding === undefined) && storageBuilding.store.energy > 0)
+    	        {
+    	            if (storageBuilding.transferEnergy(creep) == ERR_NOT_IN_RANGE)
+    	            {
+    	                creep.moveTo(storageBuilding);
+    	            }
+    	        }
+    	        else
+    	        {
+        	        var targetExt = creep.pos.findClosestByPath(FIND_MY_STRUCTURES,
+                    {
+                        filter: function(object)
+                        {
+                            return (object.energy >= object.energyCapacity);
+                        }
+                    });
+                        
+                    if (targetExt)
+                    {
+                        if (targetExt.transferEnergy(creep) == ERR_NOT_IN_RANGE)
+                        {
+                            creep.moveTo(targetExt);
+                        }
+                    }
+    	        }
+    	    }
+    	}
+    	else
+    	{
+    	    Memory.creeps[creep.name].job = 'repair';
+    	}
+    }
+    else
+    {
+        
+        if (creep.carry.energy > 0)
+        {
+            //lowest health rampart, then the walls.
+            
+            var targetRampart = null;
+            
+            var ramparts = creep.room.find(FIND_MY_STRUCTURES,
+            {
+                filter: { structureType: STRUCTURE_RAMPART}
+            });
+            
+            for(var x in ramparts)
+            {
+                if (ramparts[x].hits >= ramparts[x].hitsMax)
+                {
+                    continue;
+                }
+                else if (ramparts[x].hits == 1)
+                {
+                    targetRampart = ramparts[x];
+                    break;
+                }
+                else if (targetRampart == null)
+                {
+                    targetRampart = ramparts[x];
+                }
+                else
+                {
+                    if (ramparts[x].hits < targetRampart.hits)
+                    {
+                        targetRampart = ramparts[x];
+                    }
+                }
+            }
+            
+            var targetWall = null;
+            var walls = creep.room.find(FIND_STRUCTURES,
+            {
+                filter: { structureType: STRUCTURE_WALL}
+            });
+            
+            for(var x in walls)
+            {
+                if (walls[x].hits >= walls[x].hitsMax)
+                {
+                    continue;
+                }
+                else if (walls[x].hits == 1)
+                {
+                    targetWall = walls[x];
+                    break;
+                }
+                else if (targetWall == null)
+                {
+                    targetWall = walls[x];
+                }
+                else
+                {
+                    if (walls[x].hits < targetWall.hits)
+                    {
+                        targetWall = walls[x];
+                    }
+                }
+            }
+            
+            
+            var targetStructure = null;
+            if (targetRampart == null && targetWall)
+            {
+                targetStructure = targetWall;
+            }
+            else if (targetWall == null && targetRampart)
+            {
+                targetStructure = targetRampart;
+            }
+            else if (targetWall == null && targetRampart == null)
+            {
+                //no target
+            }
+            else if (targetRampart.hits <= targetWall.hits)
+            {
+                targetStructure = targetRampart;
+            }
+            else
+            {
+                targetStructure = targetWall;
+            }
+            
+            if (targetStructure)
+            {
+                if (creep.repair(targetStructure) == ERR_NOT_IN_RANGE)
+                {
+                    creep.moveTo(targetStructure);
+                }
+            }
+        }
+        else
+        {
+            Memory.creeps[creep.name].job = 'collect';
+        }
+    }
+    
+    
+    //creep.room.createConstructionSite(creep.pos, STRUCTURE_ROAD);
+}
